@@ -1,0 +1,443 @@
+diff --git a/src/data.py b/pic2word/data.py
+similarity index 98%
+rename from src/data.py
+rename to pic2word/data.py
+index 6f807dc..3eb3487 100644
+--- a/src/data.py
++++ b/pic2word/data.py
+@@ -1,3 +1,9 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+@@ -38,7 +44,7 @@ import torchvision.datasets as datasets
+ from torchvision.datasets.folder import DatasetFolder
+ import torchvision.datasets as datasets
+ import torchvision.transforms as T
+-from third_party.open_clip.clip import tokenize
++from pic2word.third_party.open_clip.clip import tokenize
+ 
+ 
+ ## Structure of dataset directory
+diff --git a/src/demo.py b/pic2word/demo.py
+similarity index 97%
+rename from src/demo.py
+rename to pic2word/demo.py
+index 2e36e5d..78d98a7 100644
+--- a/src/demo.py
++++ b/pic2word/demo.py
+@@ -1,3 +1,9 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+diff --git a/src/eval_retrieval.py b/pic2word/eval_retrieval.py
+similarity index 93%
+rename from src/eval_retrieval.py
+rename to pic2word/eval_retrieval.py
+index 530fd61..f6b2d16 100644
+--- a/src/eval_retrieval.py
++++ b/pic2word/eval_retrieval.py
+@@ -1,3 +1,9 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+@@ -32,13 +38,13 @@ import torchvision.datasets as datasets
+ import torchvision.transforms as T
+ from PIL import Image
+ 
+-from model.clip import _transform, load
+-from model.model import convert_weights, CLIP, IM2TEXT
+-from eval_utils import evaluate_imgnet_retrieval, evaluate_coco, evaluate_fashion, evaluate_cirr, evaluate_cirr_test
+-from data import CsvDataset, CustomFolder, ImageList, CsvCOCO, FashionIQ, CIRR
+-from params import parse_args, get_project_root
+-from logger import setup_primary_logging, setup_worker_logging
+-from utils import is_master, convert_models_to_fp32, TargetPad
++from pic2word.model.clip import _transform, load
++from pic2word.model.model import convert_weights, CLIP, IM2TEXT
++from pic2word.eval_utils import evaluate_imgnet_retrieval, evaluate_coco, evaluate_fashion, evaluate_cirr, evaluate_cirr_test
++from pic2word.data import CsvDataset, CustomFolder, ImageList, CsvCOCO, FashionIQ, CIRR
++from pic2word.params import parse_args, get_project_root
++from pic2word.logger import setup_primary_logging, setup_worker_logging
++from pic2word.utils import is_master, convert_models_to_fp32, TargetPad
+ 
+ def load_model(args):
+     model, _, preprocess_val = load(
+@@ -109,7 +115,7 @@ def load_model(args):
+             f"=> loaded checkpoint '{args.resume}' (epoch {checkpoint['epoch']})"
+         )
+     else:
+-        logging.info("=> no checkpoint found at '{}'".format(args.resume))
++        raise FileNotFoundError("=> no checkpoint found at '{}'".format(args.resume))
+     return model, img2text, preprocess_val
+ 
+ def setup_log_save(args):
+@@ -346,10 +352,8 @@ def main():
+     args.log_level = logging.DEBUG if args.debug else logging.INFO
+     log_queue = setup_primary_logging(args.log_path, args.log_level)
+     args.world_size = 1
+-    try:
+-        main_worker(args.gpu, None, log_queue, args)
+-    except:
+-        print('evaluation done')
++
++    main_worker(args.gpu, None, log_queue, args)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/src/eval_utils.py b/pic2word/eval_utils.py
+similarity index 98%
+rename from src/eval_utils.py
+rename to pic2word/eval_utils.py
+index cad8cba..5f9da12 100644
+--- a/src/eval_utils.py
++++ b/pic2word/eval_utils.py
+@@ -1,3 +1,9 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+@@ -28,10 +34,10 @@ import sys
+ import pdb
+ import logging
+ import torch.nn.functional as F
+-from third_party.open_clip.clip import tokenize, _transform
++from pic2word.third_party.open_clip.clip import tokenize, _transform
+ import pickle
+ 
+-from utils import is_master
++from pic2word.utils import is_master
+ 
+ def prepare_img(img_file, transform):
+     return transform(Image.open(img_file))
+diff --git a/src/logger.py b/pic2word/logger.py
+similarity index 90%
+rename from src/logger.py
+rename to pic2word/logger.py
+index ac40aca..522c0c4 100644
+--- a/src/logger.py
++++ b/pic2word/logger.py
+@@ -1,5 +1,11 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+-#
++# 
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+diff --git a/src/main.py b/pic2word/main.py
+similarity index 97%
+rename from src/main.py
+rename to pic2word/main.py
+index 2f8d1b3..45dc20d 100644
+--- a/src/main.py
++++ b/pic2word/main.py
+@@ -1,3 +1,9 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+diff --git a/pic2word/model/__init__.py b/pic2word/model/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/model/clip.py b/pic2word/model/clip.py
+similarity index 96%
+rename from model/clip.py
+rename to pic2word/model/clip.py
+index 02625b9..500fb46 100644
+--- a/model/clip.py
++++ b/pic2word/model/clip.py
+@@ -1,5 +1,11 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+-#
++# 
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+@@ -22,9 +28,8 @@ import torch
+ from PIL import Image
+ from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize, RandomResizedCrop
+ from tqdm import tqdm
+-from model.model import build_model
+-from third_party.open_clip.simple_tokenizer import SimpleTokenizer as _Tokenizer
+-
++from pic2word.model.model import build_model
++from pic2word.third_party.open_clip.simple_tokenizer import SimpleTokenizer as _Tokenizer
+ from functools import *
+ try:
+     from huggingface_hub import hf_hub_download
+diff --git a/model/model.py b/pic2word/model/model.py
+similarity index 98%
+rename from model/model.py
+rename to pic2word/model/model.py
+index 7525fc0..9bd3c8b 100644
+--- a/model/model.py
++++ b/pic2word/model/model.py
+@@ -1,5 +1,11 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+-#
++# 
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+@@ -452,7 +458,7 @@ class CLIP(nn.Module):
+             else:
+                 img_tokens = img_tokens.view(1, 1, -1)
+                 ind_insert = ind_insert.nonzero()[0]
+-                sample = torch.cat([sample[:, :ind_insert], img_tokens, sample[:, ind_insert+1:]], dim=1)                
++                sample = torch.cat([sample[:, :ind_insert], img_tokens, sample[:, ind_insert+1:]], dim=1)
+             new_x.append(sample)
+         x = torch.cat(new_x, dim=0)
+         x = x + self.positional_embedding.type(self.dtype)
+@@ -461,7 +467,7 @@ class CLIP(nn.Module):
+         x = x.permute(1, 0, 2)  # LND -> NLD
+         x = self.ln_final(x).type(self.dtype)
+         # x.shape = [batch_size, n_ctx, transformer.width]
+-        # take features from the eot embedding (eot_token is the highest number in each sequence)    
++        # take features from the eot embedding (eot_token is the highest number in each sequence)
+         x = x[torch.arange(x.size(0)), collect_ind] @ self.text_projection
+         return x
+ 
+diff --git a/src/params.py b/pic2word/params.py
+similarity index 95%
+rename from src/params.py
+rename to pic2word/params.py
+index 5f44d39..7486994 100755
+--- a/src/params.py
++++ b/pic2word/params.py
+@@ -1,3 +1,9 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+@@ -247,6 +253,11 @@ def parse_args():
+         help="Use the openai pretrained models.",
+     )
+     # arguments for distributed training
++    parser.add_argument("--distributed",
++        default=False,
++        action="store_true",
++        help="Whether to do distribute the training on multiple machines")
++    
+     parser.add_argument(
+         "--dist-url",
+         default="tcp://127.0.0.1:6100",
+diff --git a/third_party/open_clip/LICENSE b/pic2word/third_party/open_clip/LICENSE
+similarity index 100%
+rename from third_party/open_clip/LICENSE
+rename to pic2word/third_party/open_clip/LICENSE
+diff --git a/third_party/open_clip/bpe_simple_vocab_16e6.txt.gz b/pic2word/third_party/open_clip/bpe_simple_vocab_16e6.txt.gz
+similarity index 100%
+rename from third_party/open_clip/bpe_simple_vocab_16e6.txt.gz
+rename to pic2word/third_party/open_clip/bpe_simple_vocab_16e6.txt.gz
+diff --git a/third_party/open_clip/clip.py b/pic2word/third_party/open_clip/clip.py
+similarity index 97%
+rename from third_party/open_clip/clip.py
+rename to pic2word/third_party/open_clip/clip.py
+index 2e44431..c11c75b 100644
+--- a/third_party/open_clip/clip.py
++++ b/pic2word/third_party/open_clip/clip.py
+@@ -1,3 +1,8 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# ---------------------------------------------------------------
++
+ import hashlib
+ import os
+ import urllib
+diff --git a/third_party/open_clip/environment.yml b/pic2word/third_party/open_clip/environment.yml
+similarity index 94%
+rename from third_party/open_clip/environment.yml
+rename to pic2word/third_party/open_clip/environment.yml
+index a75144f..110267b 100644
+--- a/third_party/open_clip/environment.yml
++++ b/pic2word/third_party/open_clip/environment.yml
+@@ -1,3 +1,8 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# ---------------------------------------------------------------
++
+ name: open_clip
+ channels:
+   - pytorch
+diff --git a/third_party/open_clip/model.py b/pic2word/third_party/open_clip/model.py
+similarity index 98%
+rename from third_party/open_clip/model.py
+rename to pic2word/third_party/open_clip/model.py
+index cda8161..824a6ff 100644
+--- a/third_party/open_clip/model.py
++++ b/pic2word/third_party/open_clip/model.py
+@@ -1,3 +1,8 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# ---------------------------------------------------------------
++
+ from collections import OrderedDict
+ from typing import Tuple, Union
+ 
+diff --git a/third_party/open_clip/model_configs/RN101.json b/pic2word/third_party/open_clip/model_configs/RN101.json
+similarity index 100%
+rename from third_party/open_clip/model_configs/RN101.json
+rename to pic2word/third_party/open_clip/model_configs/RN101.json
+diff --git a/third_party/open_clip/model_configs/RN50.json b/pic2word/third_party/open_clip/model_configs/RN50.json
+similarity index 100%
+rename from third_party/open_clip/model_configs/RN50.json
+rename to pic2word/third_party/open_clip/model_configs/RN50.json
+diff --git a/third_party/open_clip/model_configs/RN50_a2.json b/pic2word/third_party/open_clip/model_configs/RN50_a2.json
+similarity index 100%
+rename from third_party/open_clip/model_configs/RN50_a2.json
+rename to pic2word/third_party/open_clip/model_configs/RN50_a2.json
+diff --git a/third_party/open_clip/model_configs/RN50_a2s.json b/pic2word/third_party/open_clip/model_configs/RN50_a2s.json
+similarity index 100%
+rename from third_party/open_clip/model_configs/RN50_a2s.json
+rename to pic2word/third_party/open_clip/model_configs/RN50_a2s.json
+diff --git a/third_party/open_clip/model_configs/RN50x16.json b/pic2word/third_party/open_clip/model_configs/RN50x16.json
+similarity index 100%
+rename from third_party/open_clip/model_configs/RN50x16.json
+rename to pic2word/third_party/open_clip/model_configs/RN50x16.json
+diff --git a/third_party/open_clip/model_configs/RN50x4.json b/pic2word/third_party/open_clip/model_configs/RN50x4.json
+similarity index 100%
+rename from third_party/open_clip/model_configs/RN50x4.json
+rename to pic2word/third_party/open_clip/model_configs/RN50x4.json
+diff --git a/third_party/open_clip/model_configs/ViT-B-16.json b/pic2word/third_party/open_clip/model_configs/ViT-B-16.json
+similarity index 100%
+rename from third_party/open_clip/model_configs/ViT-B-16.json
+rename to pic2word/third_party/open_clip/model_configs/ViT-B-16.json
+diff --git a/third_party/open_clip/model_configs/ViT-B-32.json b/pic2word/third_party/open_clip/model_configs/ViT-B-32.json
+similarity index 100%
+rename from third_party/open_clip/model_configs/ViT-B-32.json
+rename to pic2word/third_party/open_clip/model_configs/ViT-B-32.json
+diff --git a/third_party/open_clip/scheduler.py b/pic2word/third_party/open_clip/scheduler.py
+similarity index 68%
+rename from third_party/open_clip/scheduler.py
+rename to pic2word/third_party/open_clip/scheduler.py
+index 200cec8..147e813 100644
+--- a/third_party/open_clip/scheduler.py
++++ b/pic2word/third_party/open_clip/scheduler.py
+@@ -1,3 +1,8 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# ---------------------------------------------------------------
++
+ import numpy as np
+ 
+ def assign_learning_rate(optimizer, new_lr):
+diff --git a/third_party/open_clip/simple_tokenizer.py b/pic2word/third_party/open_clip/simple_tokenizer.py
+similarity index 94%
+rename from third_party/open_clip/simple_tokenizer.py
+rename to pic2word/third_party/open_clip/simple_tokenizer.py
+index 876f08f..6665c33 100644
+--- a/third_party/open_clip/simple_tokenizer.py
++++ b/pic2word/third_party/open_clip/simple_tokenizer.py
+@@ -1,3 +1,9 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# ---------------------------------------------------------------
++
++
+ import gzip
+ import html
+ import os
+diff --git a/src/trainer.py b/pic2word/trainer.py
+similarity index 96%
+rename from src/trainer.py
+rename to pic2word/trainer.py
+index 60eb2f5..476872e 100644
+--- a/src/trainer.py
++++ b/pic2word/trainer.py
+@@ -1,5 +1,11 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+-#
++# 
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+diff --git a/src/utils.py b/pic2word/utils.py
+similarity index 82%
+rename from src/utils.py
+rename to pic2word/utils.py
+index 52dbb2c..64b93a1 100644
+--- a/src/utils.py
++++ b/pic2word/utils.py
+@@ -1,5 +1,11 @@
++# ---------------------------------------------------------------
++# This file has been modified from the file in the following repository:
++# https://github.com/google-research/composed_image_retrieval
++# See below for the original license.
++# ---------------------------------------------------------------
++
+ # Copyright 2022 Google LLC
+-#
++# 
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+diff --git a/setup.py b/setup.py
+new file mode 100644
+index 0000000..8baf351
+--- /dev/null
++++ b/setup.py
+@@ -0,0 +1,3 @@
++from setuptools import setup, find_packages
++
++setup(name='pic2word', version='1.0', packages=find_packages())
+\ No newline at end of file
